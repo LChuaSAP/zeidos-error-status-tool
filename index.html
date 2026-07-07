@@ -192,6 +192,7 @@ input.color-picker { width: 28px; height: 20px; padding: 0; border: none; cursor
       <input id="f-event"   placeholder="🔍 Event…"            oninput="applyFilter()">
       <input id="f-date"    placeholder="🔍 Event Date…"       oninput="applyFilter()">
       <input id="f-action"  placeholder="🔍 Action for O2I…"   oninput="applyFilter()">
+      <input id="f-remark"  placeholder="🔍 Remark…"            oninput="applyFilter()">
       <button class="btn-secondary" onclick="clearFilter()">✕ Clear</button>
     </div>
     <div class="filter-meta">
@@ -858,6 +859,7 @@ function applyFilter() {
   const fe = document.getElementById('f-event').value.trim().toLowerCase();
   const fd = document.getElementById('f-date').value.trim().toLowerCase();
   const fa = document.getElementById('f-action').value.trim().toLowerCase();
+  const fr = document.getElementById('f-remark').value.trim().toLowerCase();
 
   filteredRows = [];
   mainData.forEach((row, i) => {
@@ -866,6 +868,7 @@ function applyFilter() {
     if (fe && !(row['Event'] || '').toLowerCase().includes(fe)) return;
     if (fd && !(row['Event Date'] || '').toLowerCase().includes(fd)) return;
     if (fa && !(row['Action to be taken by O2I'] || '').toLowerCase().includes(fa)) return;
+    if (fr && !(row['Remark'] || '').toLowerCase().includes(fr)) return;
     filteredRows.push(i);
   });
   currentPage = 1;
@@ -873,7 +876,7 @@ function applyFilter() {
 }
 
 function clearFilter() {
-  ['f-comment','f-invoice','f-event','f-date','f-action'].forEach(id => document.getElementById(id).value = '');
+  ['f-comment','f-invoice','f-event','f-date','f-action','f-remark'].forEach(id => document.getElementById(id).value = '');
   activeTile = null;
   if (mainData) applyFilter();
   renderDashboard();
