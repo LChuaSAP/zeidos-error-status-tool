@@ -6,262 +6,150 @@
 <title>ZEIDOS Error Status Tool</title>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; color: #2d3748; min-height: 100vh; padding: 20px 18px; }
 
-  body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: #f0f4f8;
-    color: #2d3748;
-    min-height: 100vh;
-    padding: 32px 24px;
-  }
+/* ── Header ── */
+.header { background: linear-gradient(135deg, #0050a0, #0078d4); color: white; padding: 18px 28px; border-radius: 12px; margin-bottom: 18px; display: flex; align-items: center; gap: 16px; box-shadow: 0 4px 16px rgba(0,80,160,0.25); }
+.header svg { flex-shrink: 0; }
+.header h1 { font-size: 1.4rem; font-weight: 600; }
+.header p  { font-size: 0.82rem; opacity: 0.85; margin-top: 3px; }
 
-  .header {
-    background: linear-gradient(135deg, #0050a0, #0078d4);
-    color: white;
-    padding: 24px 32px;
-    border-radius: 12px;
-    margin-bottom: 28px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    box-shadow: 0 4px 16px rgba(0,80,160,0.25);
-  }
-  .header svg { flex-shrink: 0; }
-  .header h1 { font-size: 1.5rem; font-weight: 600; }
-  .header p  { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+/* ── Tab bar ── */
+#tab-bar { display: flex; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); margin-bottom: 18px; }
+#tab-bar button { flex: 1; padding: 13px 10px; background: white; border: none; border-right: 1px solid #e2e8f0; font-size: 0.86rem; color: #718096; cursor: pointer; font-weight: 500; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+#tab-bar button:last-child { border-right: none; }
+#tab-bar button.active { background: #ebf4ff; color: #0050a0; font-weight: 700; border-bottom: 3px solid #0078d4; }
+#tab-bar button:hover:not(.active) { background: #f7faff; color: #2d3748; }
 
-  .card {
-    background: white;
-    border-radius: 10px;
-    padding: 24px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  }
-  .card h2 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #0050a0;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+/* ── Cards ── */
+.card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+.card h2 { font-size: 0.95rem; font-weight: 600; color: #0050a0; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
 
-  /* Step indicators */
-  .steps {
-    display: flex;
-    gap: 0;
-    margin-bottom: 28px;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  }
-  .step {
-    flex: 1;
-    padding: 14px 10px;
-    background: white;
-    text-align: center;
-    font-size: 0.8rem;
-    color: #718096;
-    border-right: 1px solid #e2e8f0;
-    position: relative;
-  }
-  .step:last-child { border-right: none; }
-  .step.active { background: #ebf4ff; color: #0050a0; font-weight: 600; }
-  .step.done   { background: #f0fff4; color: #276749; }
-  .step-num {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 24px; height: 24px; border-radius: 50%;
-    background: #e2e8f0; color: #718096;
-    font-size: 0.75rem; font-weight: 700;
-    margin-bottom: 5px;
-  }
-  .step.active .step-num { background: #0078d4; color: white; }
-  .step.done   .step-num { background: #48bb78; color: white; }
+/* ── Buttons ── */
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+button { padding: 9px 18px; border: none; border-radius: 7px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary  { background: #0078d4; color: white; }
+.btn-primary:hover:not(:disabled)  { background: #0050a0; }
+.btn-success  { background: #38a169; color: white; }
+.btn-success:hover:not(:disabled)  { background: #276749; }
+.btn-secondary{ background: #e2e8f0; color: #4a5568; }
+.btn-secondary:hover:not(:disabled){ background: #cbd5e0; }
+.btn-danger   { background: #fff5f5; color: #e53e3e; border: 1px solid #feb2b2; }
+.btn-danger:hover:not(:disabled)   { background: #fee2e2; }
 
-  /* File load section */
-  .file-row {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
-  .file-box {
-    flex: 1;
-    min-width: 220px;
-    border: 2px dashed #cbd5e0;
-    border-radius: 8px;
-    padding: 18px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-  }
-  .file-box:hover, .file-box.drag-over {
-    border-color: #0078d4;
-    background: #ebf4ff;
-  }
-  .file-box.loaded {
-    border-color: #48bb78;
-    background: #f0fff4;
-    border-style: solid;
-  }
-  .file-box input { display: none; }
-  .file-box .icon { font-size: 2rem; margin-bottom: 8px; }
-  .file-box .label { font-size: 0.85rem; color: #4a5568; font-weight: 500; }
-  .file-box .sublabel { font-size: 0.75rem; color: #a0aec0; margin-top: 4px; }
-  .file-box .loaded-name {
-    font-size: 0.78rem; color: #276749; margin-top: 6px;
-    word-break: break-all; font-weight: 500;
-  }
+/* ── Spinner ── */
+.spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Drop zone for new files */
-  #dropzone {
-    border: 2px dashed #0078d4;
-    border-radius: 8px;
-    padding: 32px 20px;
-    text-align: center;
-    background: #f7faff;
-    transition: all 0.2s;
-    cursor: pointer;
-  }
-  #dropzone.drag-over {
-    background: #ebf4ff;
-    border-color: #0050a0;
-    transform: scale(1.01);
-  }
-  #dropzone .drop-icon { font-size: 2.5rem; margin-bottom: 10px; }
-  #dropzone .drop-title { font-size: 1rem; font-weight: 600; color: #0050a0; }
-  #dropzone .drop-sub   { font-size: 0.82rem; color: #718096; margin-top: 6px; }
-  #dropzone input { display: none; }
+/* ── Badge ── */
+.badge { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 0.68rem; font-weight: 600; margin-left: 5px; vertical-align: middle; }
+.badge-blue  { background: #bee3f8; color: #2b6cb0; }
+.badge-green { background: #9ae6b4; color: #276749; }
+.badge-amber { background: #fbd38d; color: #744210; }
 
-  /* Queued files list */
-  #queued-list { margin-top: 14px; }
-  .queued-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 12px; background: #f7fafc;
-    border-radius: 6px; margin-bottom: 6px;
-    font-size: 0.82rem; border: 1px solid #e2e8f0;
-  }
-  .queued-item .q-name { flex: 1; color: #2d3748; }
-  .queued-item .q-rows { color: #718096; font-size: 0.75rem; }
-  .queued-item .q-remove {
-    cursor: pointer; color: #e53e3e; font-size: 1rem;
-    line-height: 1; padding: 2px 6px; border-radius: 4px;
-  }
-  .queued-item .q-remove:hover { background: #fff5f5; }
+/* ── Toast ── */
+#toast { position: fixed; bottom: 24px; right: 24px; background: #2d3748; color: white; padding: 10px 18px; border-radius: 8px; font-size: 0.83rem; font-weight: 500; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 9999; }
+#toast.show { opacity: 1; }
 
-  /* Action buttons */
-  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
-  button {
-    padding: 10px 22px;
-    border: none; border-radius: 7px;
-    font-size: 0.88rem; font-weight: 600;
-    cursor: pointer; transition: all 0.15s;
-    display: flex; align-items: center; gap: 7px;
-  }
-  button:disabled { opacity: 0.45; cursor: not-allowed; }
-  .btn-primary { background: #0078d4; color: white; }
-  .btn-primary:hover:not(:disabled) { background: #0050a0; }
-  .btn-success { background: #38a169; color: white; }
-  .btn-success:hover:not(:disabled) { background: #276749; }
-  .btn-secondary { background: #e2e8f0; color: #4a5568; }
-  .btn-secondary:hover:not(:disabled) { background: #cbd5e0; }
-  .btn-danger { background: #fff5f5; color: #e53e3e; border: 1px solid #feb2b2; }
-  .btn-danger:hover:not(:disabled) { background: #fee2e2; }
+/* ── Cache banner ── */
+#cache-banner { display: none; margin-bottom: 14px; padding: 10px 16px; border-radius: 8px; font-size: 0.82rem; align-items: center; gap: 10px; flex-wrap: wrap; }
+#cache-banner.has-cache { display: flex; background: #f0fff4; border: 1px solid #9ae6b4; color: #276749; }
 
-  /* Progress / log */
-  #log-box {
-    background: #1a202c; color: #a0aec0;
-    border-radius: 8px; padding: 16px;
-    font-family: 'Cascadia Code', 'Courier New', monospace;
-    font-size: 0.78rem; line-height: 1.7;
-    max-height: 220px; overflow-y: auto;
-    display: none;
-  }
-  .log-ok   { color: #68d391; }
-  .log-warn { color: #fbd38d; }
-  .log-err  { color: #fc8181; }
-  .log-info { color: #63b3ed; }
+/* ── Dashboard tiles ── */
+#dashboard-tiles { display: flex; flex-wrap: wrap; gap: 12px; }
+.dash-tile { background: white; border-radius: 10px; padding: 16px 14px; min-width: 120px; flex: 1 1 120px; max-width: 175px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); cursor: pointer; transition: all 0.15s; text-align: center; border: 2px solid transparent; user-select: none; }
+.dash-tile:hover { border-color: #0078d4; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,80,160,0.15); }
+.dash-tile.active-tile { border-color: #0078d4; background: #ebf4ff; }
+.dash-tile .tile-count { font-size: 1.9rem; font-weight: 700; color: #0050a0; line-height: 1; }
+.dash-tile .tile-label { font-size: 0.72rem; color: #718096; margin-top: 5px; font-weight: 500; }
+.dash-tile.tile-total     .tile-count { color: #2d3748; }
+.dash-tile.tile-unmatched .tile-count { color: #e53e3e; }
+#dash-placeholder { text-align: center; color: #a0aec0; padding: 40px 20px; font-size: 0.9rem; }
 
-  /* Stats bar */
-  #stats-bar {
-    display: none;
-    gap: 12px; flex-wrap: wrap; margin-top: 16px;
-  }
-  .stat-pill {
-    background: #ebf4ff; color: #0050a0;
-    border-radius: 20px; padding: 6px 14px;
-    font-size: 0.8rem; font-weight: 600;
-    border: 1px solid #bee3f8;
-  }
-  .stat-pill.green { background: #f0fff4; color: #276749; border-color: #9ae6b4; }
-  .stat-pill.amber { background: #fffbeb; color: #744210; border-color: #fbd38d; }
+/* ── MAIN Data tab ── */
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+.filter-row input { padding: 7px 11px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.82rem; color: #2d3748; flex: 1 1 130px; min-width: 110px; }
+.filter-row input:focus { outline: none; border-color: #0078d4; box-shadow: 0 0 0 2px rgba(0,120,212,0.12); }
+.filter-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+#main-row-count { font-size: 0.8rem; color: #718096; font-weight: 500; }
+#unsaved-badge { display: none; }
 
-  /* Preview table */
-  #preview-wrap {
-    display: none;
-    margin-top: 16px;
-    overflow-x: auto;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    max-height: 320px;
-    overflow-y: auto;
-  }
-  #preview-wrap table {
-    border-collapse: collapse;
-    font-size: 0.75rem;
-    width: 100%;
-    min-width: 800px;
-  }
-  #preview-wrap th {
-    background: #bdd7ee;
-    font-weight: 700;
-    padding: 7px 10px;
-    text-align: left;
-    position: sticky; top: 0;
-    border-right: 1px solid #90cdf4;
-    white-space: nowrap;
-  }
-  #preview-wrap td {
-    padding: 5px 10px;
-    border-bottom: 1px solid #f0f4f8;
-    border-right: 1px solid #f0f4f8;
-    white-space: nowrap;
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  #preview-wrap tr:hover td { background: #f7faff; }
-  .color-dot {
-    display: inline-block; width: 10px; height: 10px;
-    border-radius: 50%; margin-right: 5px; vertical-align: middle;
-  }
+#main-table-wrap { overflow-x: auto; max-height: calc(100vh - 310px); overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
+#main-data-table { border-collapse: collapse; font-size: 0.74rem; width: 100%; min-width: 900px; }
+#main-data-table th { background: #bdd7ee; font-weight: 700; padding: 7px 9px; text-align: left; position: sticky; top: 0; z-index: 2; border-right: 1px solid #90cdf4; white-space: nowrap; user-select: none; -webkit-user-select: none; }
+#main-data-table td { padding: 4px 9px; border-bottom: 1px solid #f0f4f8; border-right: 1px solid #f0f4f8; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; user-select: none; -webkit-user-select: none; }
+#main-data-table tr:hover td { background: rgba(247,250,255,0.9); }
+#main-data-table td.col-invoice { user-select: text; -webkit-user-select: text; text-align: center; font-weight: 500; }
+#main-data-table td.col-comment { user-select: text; -webkit-user-select: text; cursor: text; max-width: 260px; white-space: normal; word-break: break-word; outline: none; }
+#main-data-table td.col-comment:hover { background: #fffbeb !important; outline: 1px solid #fbd38d; }
+#main-data-table td.col-comment:focus { background: #fffff0 !important; outline: 2px solid #f6ad55; }
+#main-pagination { display: flex; align-items: center; gap: 6px; padding: 10px 14px 6px; font-size: 0.8rem; color: #718096; flex-wrap: wrap; }
+#main-pagination button { padding: 4px 10px; font-size: 0.78rem; background: #e2e8f0; color: #4a5568; border-radius: 5px; min-width: 32px; }
+#main-pagination button.active-page { background: #0078d4; color: white; }
+#main-placeholder { text-align: center; color: #a0aec0; padding: 40px 20px; font-size: 0.9rem; }
 
-  .spinner {
-    display: inline-block; width: 14px; height: 14px;
-    border: 2px solid rgba(255,255,255,0.4);
-    border-top-color: white; border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* ── Rules tab ── */
+.rule-section { margin-bottom: 4px; }
+.rule-table-wrap { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; max-height: 380px; overflow-y: auto; }
+.rule-table { border-collapse: collapse; font-size: 0.78rem; width: 100%; min-width: 400px; }
+.rule-table th { background: #bdd7ee; font-weight: 700; padding: 7px 10px; text-align: left; position: sticky; top: 0; border-right: 1px solid #90cdf4; white-space: nowrap; user-select: none; }
+.rule-table td { padding: 5px 9px; border-bottom: 1px solid #f0f4f8; border-right: 1px solid #f0f4f8; vertical-align: middle; }
+.rule-table td.editable { cursor: text; user-select: text; -webkit-user-select: text; outline: none; min-width: 80px; }
+.rule-table td.editable:hover { background: #f7faff; outline: 1px solid #90cdf4; }
+.rule-table td.editable:focus { background: #f0f8ff; outline: 2px solid #0078d4; }
+.rule-table td.col-action { max-width: 380px; white-space: normal; word-break: break-word; }
+.color-swatch { display: inline-block; width: 24px; height: 15px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.18); vertical-align: middle; margin-right: 4px; }
+input.color-picker { width: 28px; height: 20px; padding: 0; border: none; cursor: pointer; background: none; vertical-align: middle; }
+.rule-cache-info { font-size: 0.74rem; color: #718096; margin-bottom: 10px; font-style: italic; }
 
-  .badge {
-    display: inline-block; padding: 2px 8px;
-    border-radius: 10px; font-size: 0.7rem; font-weight: 600;
-    margin-left: 6px; vertical-align: middle;
-  }
-  .badge-blue  { background: #bee3f8; color: #2b6cb0; }
-  .badge-green { background: #9ae6b4; color: #276749; }
-
-  hr { border: none; border-top: 1px solid #e2e8f0; margin: 20px 0; }
+/* ── Update tab ── */
+.file-row { display: flex; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+.file-box { flex: 1; min-width: 200px; border: 2px dashed #cbd5e0; border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.2s; }
+.file-box:hover, .file-box.drag-over { border-color: #0078d4; background: #ebf4ff; }
+.file-box.loaded { border-color: #48bb78; background: #f0fff4; border-style: solid; }
+.file-box input { display: none; }
+.file-box .icon { font-size: 1.8rem; margin-bottom: 6px; }
+.file-box .label { font-size: 0.83rem; color: #4a5568; font-weight: 500; }
+.file-box .sublabel { font-size: 0.72rem; color: #a0aec0; margin-top: 3px; }
+.file-box .loaded-name { font-size: 0.75rem; color: #276749; margin-top: 5px; word-break: break-all; font-weight: 500; }
+#dropzone { border: 2px dashed #0078d4; border-radius: 8px; padding: 28px 18px; text-align: center; background: #f7faff; transition: all 0.2s; cursor: pointer; }
+#dropzone.drag-over { background: #ebf4ff; border-color: #0050a0; transform: scale(1.01); }
+#dropzone .drop-icon { font-size: 2.2rem; margin-bottom: 8px; }
+#dropzone .drop-title { font-size: 0.95rem; font-weight: 600; color: #0050a0; }
+#dropzone .drop-sub { font-size: 0.8rem; color: #718096; margin-top: 5px; }
+#dropzone input { display: none; }
+#queued-list { margin-top: 12px; }
+.queued-item { display: flex; align-items: center; gap: 9px; padding: 7px 11px; background: #f7fafc; border-radius: 6px; margin-bottom: 5px; font-size: 0.8rem; border: 1px solid #e2e8f0; }
+.queued-item .q-name { flex: 1; color: #2d3748; }
+.queued-item .q-rows { color: #718096; font-size: 0.73rem; }
+.queued-item .q-remove { cursor: pointer; color: #e53e3e; font-size: 0.95rem; padding: 2px 5px; border-radius: 4px; }
+.queued-item .q-remove:hover { background: #fff5f5; }
+#log-box { background: #1a202c; color: #a0aec0; border-radius: 8px; padding: 14px; font-family: 'Cascadia Code','Courier New',monospace; font-size: 0.76rem; line-height: 1.7; max-height: 200px; overflow-y: auto; display: none; margin-top: 14px; }
+.log-ok   { color: #68d391; }
+.log-warn { color: #fbd38d; }
+.log-err  { color: #fc8181; }
+.log-info { color: #63b3ed; }
+#stats-bar { display: none; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.stat-pill { background: #ebf4ff; color: #0050a0; border-radius: 20px; padding: 5px 13px; font-size: 0.78rem; font-weight: 600; border: 1px solid #bee3f8; }
+.stat-pill.green { background: #f0fff4; color: #276749; border-color: #9ae6b4; }
+.stat-pill.amber { background: #fffbeb; color: #744210; border-color: #fbd38d; }
+.steps { display: flex; margin-bottom: 16px; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+.step { flex: 1; padding: 11px 8px; background: white; text-align: center; font-size: 0.76rem; color: #718096; border-right: 1px solid #e2e8f0; }
+.step:last-child { border-right: none; }
+.step.active { background: #ebf4ff; color: #0050a0; font-weight: 600; }
+.step.done   { background: #f0fff4; color: #276749; }
+.step-num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #e2e8f0; color: #718096; font-size: 0.72rem; font-weight: 700; margin-bottom: 4px; }
+.step.active .step-num { background: #0078d4; color: white; }
+.step.done   .step-num { background: #48bb78; color: white; }
 </style>
 </head>
 <body>
 
+<!-- Header -->
 <div class="header">
-  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+  <svg width="38" height="38" viewBox="0 0 40 40" fill="none">
     <rect width="40" height="40" rx="8" fill="rgba(255,255,255,0.15)"/>
     <rect x="8" y="10" width="24" height="3" rx="1.5" fill="white"/>
     <rect x="8" y="16" width="18" height="3" rx="1.5" fill="white" opacity="0.8"/>
@@ -272,205 +160,314 @@
   </svg>
   <div>
     <h1>ZEIDOS Error Status Tool</h1>
-    <p>Combine &bull; Comment &bull; Deduplicate &bull; Export &mdash; Invoice Delivery CoE</p>
+    <p>Invoice Delivery CoE &mdash; Dashboard &bull; MAIN Data &bull; Rules &bull; Update</p>
   </div>
 </div>
 
-<!-- Cache status banner -->
-<div id="cache-banner" style="display:none; margin-bottom:20px; padding:12px 18px; border-radius:8px; font-size:0.83rem; display:flex; align-items:center; gap:12px; flex-wrap:wrap;"></div>
-
-<!-- Step indicator -->
-<div class="steps" id="step-bar">
-  <div class="step active" id="step1">
-    <div class="step-num">1</div><br>Rule File
-  </div>
-  <div class="step" id="step2">
-    <div class="step-num">2</div><br>Add New Data
-  </div>
-  <div class="step" id="step3">
-    <div class="step-num">3</div><br>Process
-  </div>
-  <div class="step" id="step4">
-    <div class="step-num">4</div><br>Download
-  </div>
+<!-- Tab bar -->
+<div id="tab-bar">
+  <button data-tab="dashboard" class="active">📊 Dashboard</button>
+  <button data-tab="main">📋 MAIN Data</button>
+  <button data-tab="rules">📐 Rules</button>
+  <button data-tab="update">⬆️ Update</button>
 </div>
 
-<!-- Step 1: Load Rule (MAIN auto-restored from cache) -->
-<div class="card" id="card-load">
-  <h2>
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-5L9 4H4z"/></svg>
-    Step 1 — Load Rule file
-  </h2>
+<!-- Toast -->
+<div id="toast"></div>
 
-  <!-- Rule file box (always required) -->
-  <div class="file-row">
-    <div class="file-box" id="box-rule" onclick="document.getElementById('inp-rule').click()"
-         ondragover="dragOver(event,'box-rule')" ondragleave="dragLeave('box-rule')" ondrop="dropFile(event,'rule')">
-      <input type="file" id="inp-rule" accept=".xlsx,.xlsb,.xls" onchange="loadFile(this,'rule')">
-      <div class="icon">📋</div>
-      <div class="label">Rule.xlsx <span class="badge badge-blue">Required</span></div>
-      <div class="sublabel">Drop or click to load — only needed once per session<br>or when the Rule file has been updated</div>
-      <div class="loaded-name" id="rule-name"></div>
+<!-- ═══════════════════════════ DASHBOARD TAB ═══════════════════════════ -->
+<div id="tab-dashboard" class="tab-panel">
+  <div id="dash-placeholder" class="card" style="display:none">
+    No data loaded yet — go to the <strong>Update</strong> tab to load your MAIN file and Rule file.
+  </div>
+  <div id="dashboard-tiles"></div>
+</div>
+
+<!-- ═══════════════════════════ MAIN DATA TAB ══════════════════════════ -->
+<div id="tab-main" class="tab-panel" style="display:none">
+  <div class="card" style="padding-bottom:12px;">
+    <div class="filter-row">
+      <input id="f-comment" placeholder="🔍 Comment…"          oninput="applyFilter()">
+      <input id="f-invoice" placeholder="🔍 Invoice Number…"   oninput="applyFilter()">
+      <input id="f-event"   placeholder="🔍 Event…"            oninput="applyFilter()">
+      <input id="f-date"    placeholder="🔍 Event Date…"       oninput="applyFilter()">
+      <input id="f-action"  placeholder="🔍 Action for O2I…"   oninput="applyFilter()">
+      <button class="btn-secondary" onclick="clearFilter()">✕ Clear</button>
     </div>
-
-    <!-- MAIN file box — shown only when no cache exists -->
-    <div class="file-box" id="box-main" onclick="document.getElementById('inp-main').click()"
-         ondragover="dragOver(event,'box-main')" ondragleave="dragLeave('box-main')" ondrop="dropFile(event,'main')">
-      <input type="file" id="inp-main" accept=".xlsx,.xlsb,.xls" onchange="loadFile(this,'main')">
-      <div class="icon">📊</div>
-      <div class="label">ZEIDOS Error Status MAIN.xlsx</div>
-      <div class="sublabel" id="main-sublabel">Auto-restored from cache ✓<br>Drop here to load a different version</div>
-      <div class="loaded-name" id="main-name"></div>
+    <div class="filter-meta">
+      <span id="main-row-count">—</span>
+      <button class="btn-primary"  onclick="copyInvoiceNumbers()">📋 Copy Invoice Numbers</button>
+      <button class="btn-success"  onclick="buildAndDownloadMain()">⬇️ Save &amp; Download MAIN.xlsx</button>
+      <span id="unsaved-badge" class="badge badge-amber">● Unsaved edits</span>
     </div>
   </div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div id="main-table-wrap">
+      <div id="main-placeholder" style="display:none;text-align:center;color:#a0aec0;padding:40px 20px;">
+        No data. Load files in the Update tab.
+      </div>
+      <table id="main-data-table" style="display:none"></table>
+    </div>
+    <div id="main-pagination"></div>
+  </div>
 </div>
 
-<!-- Step 2: Drop new files -->
-<div class="card" id="card-drop">
-  <h2>
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-    Step 2 — Add new ZEIDOS report files
-  </h2>
-  <div id="dropzone"
-       ondragover="dragOver(event,'dropzone')" ondragleave="dragLeave('dropzone')" ondrop="dropNewFiles(event)"
-       onclick="document.getElementById('inp-new').click()">
-    <input type="file" id="inp-new" accept=".xlsx,.xlsb,.xls" multiple onchange="addNewFiles(this.files)">
-    <div class="drop-icon">📥</div>
-    <div class="drop-title">Drag &amp; drop new ZEIDOS report files here</div>
-    <div class="drop-sub">Accepts .xlsb and .xlsx &mdash; multiple files allowed &mdash; or click to browse</div>
+<!-- ═══════════════════════════ RULES TAB ══════════════════════════════ -->
+<div id="tab-rules" class="tab-panel" style="display:none">
+  <div id="rules-placeholder" class="card" style="display:none;text-align:center;color:#a0aec0;padding:30px;">
+    No rules loaded. Load Rule.xlsx in the Update tab, or rules will auto-restore from cache.
   </div>
-  <div id="queued-list"></div>
+  <div class="card rule-section" id="rule1-section">
+    <h2>📌 Rule 1 — Sales Organization &rarr; Comment</h2>
+    <div id="rule-cache-info" class="rule-cache-info"></div>
+    <div id="rule1-table-wrap" class="rule-table-wrap"></div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="addRule1Row()">+ Add Row</button>
+      <button class="btn-success" onclick="downloadRuleXlsx()">⬇️ Save &amp; Download Rule.xlsx</button>
+    </div>
+  </div>
+  <div class="card rule-section" id="rule2-section">
+    <h2>📌 Rule 2 — Action Text &rarr; Comment</h2>
+    <div id="rule2-table-wrap" class="rule-table-wrap"></div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="addRule2Row()">+ Add Row</button>
+    </div>
+  </div>
 </div>
 
-<!-- Step 3: Process -->
-<div class="card">
-  <h2>
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
-    Step 3 — Process
-  </h2>
-  <div class="btn-row">
-    <button class="btn-primary" id="btn-process" onclick="runProcess()" disabled>
-      <span id="process-icon">⚙️</span> Process All Steps
-    </button>
-    <button class="btn-secondary" onclick="clearAll()">🗑 Clear All</button>
+<!-- ═══════════════════════════ UPDATE TAB ═════════════════════════════ -->
+<div id="tab-update" class="tab-panel" style="display:none">
+
+  <div id="cache-banner">
+    <span style="font-size:1.1rem">💾</span>
+    <span id="cache-text"></span>
+    <button class="btn-danger" style="padding:4px 11px;font-size:0.74rem;margin-left:auto;" onclick="clearMainCache()">🗑 Clear cache</button>
   </div>
 
-  <div style="margin-top:16px;">
+  <div class="steps" id="step-bar">
+    <div class="step active" id="step1"><div class="step-num">1</div><br>Rule File</div>
+    <div class="step" id="step2"><div class="step-num">2</div><br>Add New Data</div>
+    <div class="step" id="step3"><div class="step-num">3</div><br>Process</div>
+    <div class="step" id="step4"><div class="step-num">4</div><br>Done</div>
+  </div>
+
+  <div class="card">
+    <h2>Step 1 — Load files</h2>
+    <div class="file-row">
+      <div class="file-box" id="box-rule" onclick="document.getElementById('inp-rule').click()"
+           ondragover="dragOver(event,'box-rule')" ondragleave="dragLeave('box-rule')" ondrop="dropFile(event,'rule')">
+        <input type="file" id="inp-rule" accept=".xlsx,.xlsb,.xls" onchange="loadFile(this,'rule')">
+        <div class="icon">📋</div>
+        <div class="label">Rule.xlsx <span class="badge badge-blue">Required</span></div>
+        <div class="sublabel">Drop or click — once per session<br>or when rules have been updated</div>
+        <div class="loaded-name" id="rule-name"></div>
+      </div>
+      <div class="file-box" id="box-main" onclick="document.getElementById('inp-main').click()"
+           ondragover="dragOver(event,'box-main')" ondragleave="dragLeave('box-main')" ondrop="dropFile(event,'main')">
+        <input type="file" id="inp-main" accept=".xlsx,.xlsb,.xls" onchange="loadFile(this,'main')">
+        <div class="icon">📊</div>
+        <div class="label">ZEIDOS Error Status MAIN.xlsx</div>
+        <div class="sublabel" id="main-sublabel">Auto-restored from cache ✓<br>Drop here to load a different version</div>
+        <div class="loaded-name" id="main-name"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Step 2 — Add new ZEIDOS report files</h2>
+    <div id="dropzone" ondragover="dragOver(event,'dropzone')" ondragleave="dragLeave('dropzone')" ondrop="dropNewFiles(event)" onclick="document.getElementById('inp-new').click()">
+      <input type="file" id="inp-new" accept=".xlsx,.xlsb,.xls" multiple onchange="addNewFiles(this.files)">
+      <div class="drop-icon">📥</div>
+      <div class="drop-title">Drag &amp; drop new ZEIDOS report files here</div>
+      <div class="drop-sub">Accepts .xlsb and .xlsx &mdash; multiple files &mdash; or click to browse</div>
+    </div>
+    <div id="queued-list"></div>
+  </div>
+
+  <div class="card">
+    <h2>Step 3 — Process</h2>
+    <div class="btn-row">
+      <button class="btn-primary" id="btn-process" onclick="runProcess()" disabled>
+        <span id="process-icon">⚙️</span> Process All Steps
+      </button>
+      <button class="btn-secondary" onclick="clearAll()">🗑 Clear All</button>
+    </div>
     <div id="stats-bar" style="display:flex;">
-      <div class="stat-pill" id="stat-total"></div>
+      <div class="stat-pill"       id="stat-total"></div>
       <div class="stat-pill green" id="stat-rule1"></div>
       <div class="stat-pill amber" id="stat-rule2"></div>
-      <div class="stat-pill" id="stat-dedup"></div>
+      <div class="stat-pill"       id="stat-dedup"></div>
     </div>
-  </div>
-
-  <div style="margin-top:14px;">
     <div id="log-box"></div>
   </div>
 </div>
 
-<!-- Step 4: Preview + Download -->
-<div class="card" id="card-download" style="display:none;">
-  <h2>
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
-    Step 4 — Preview &amp; Download
-  </h2>
-  <div class="btn-row">
-    <button class="btn-success" id="btn-download" onclick="downloadResult()">
-      ⬇️ Download ZEIDOS Error Status MAIN.xlsx
-    </button>
-    <button class="btn-secondary" onclick="togglePreview()">👁 Toggle Preview</button>
-  </div>
-  <div id="preview-wrap"></div>
-</div>
-
 <script>
-// ── State ────────────────────────────────────────────────────────────────────
-let mainData       = null;   // array of row objects (from cache or file load)
-let ruleWb         = null;   // raw XLSX workbook for Rule file
-let newFiles       = [];     // [ { name, rows } ]
-let resultWb       = null;   // final processed workbook
-let previewVisible = false;
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let mainData     = null;
+let ruleWb       = null;
+let newFiles     = [];
+let rule1Map     = {};
+let rule2Pairs   = [];
+let filteredRows = [];
+let currentPage  = 1;
+let mainDataCols = [];
+let unsavedEdits = false;
+let activeTile   = null;
 
-let rule1Map   = {};
-let rule2Pairs = [];
+const PAGE_SIZE = 100;
 
-const CACHE_KEY_MAIN     = 'zeidos_main_data';
-const CACHE_KEY_MAIN_TS  = 'zeidos_main_ts';
-const CACHE_KEY_MAIN_ROW = 'zeidos_main_rows';
+const CK_MAIN     = 'zeidos_main_data';
+const CK_MAIN_TS  = 'zeidos_main_ts';
+const CK_MAIN_ROW = 'zeidos_main_rows';
+const CK_RULE1    = 'zeidos_rule1';
+const CK_RULE2    = 'zeidos_rule2';
+const CK_RULE_TS  = 'zeidos_rule_ts';
 
 const COLOR_PEACH   = 'FFFCE4D6';
 const COLOR_ORANGE  = 'FFFFC000';
 const COLOR_SKYBLUE = 'FF00B0F0';
 const THEME5_BASE   = [0x44, 0x72, 0xC4];
 
-// ── On page load: restore MAIN from localStorage ──────────────────────────────
+const TILE_DEFS = [
+  { kw: 'missing email',        label: 'Missing Email' },
+  { kw: 'invalid email',        label: 'Invalid Email' },
+  { kw: 'PO issue',             label: 'PO Issue' },
+  { kw: 'pdf issue',            label: 'PDF Issue' },
+  { kw: 'KSA',                  label: 'KSA' },
+  { kw: 'Japan',                label: 'Japan' },
+  { kw: 'DIS to manually',      label: 'DIS Manual' },
+  { kw: 'IDG',                  label: 'IDG' },
+  { kw: 'Germany',              label: 'Germany' },
+  { kw: 'Italy',                label: 'Italy' },
+  { kw: 'edoc',                 label: 'eDoc' },
+  { kw: 'Poland',               label: 'Poland' },
+  { kw: 'Turkey',               label: 'Turkey' },
+  { kw: 'size of attachment',   label: 'Large Attach.' },
+  { kw: 'attribute maintained', label: 'Attribute' },
+  { kw: 'Retransfer',           label: 'Retransfer' },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
 window.addEventListener('load', () => {
+  initTabs();
+  restoreRulesFromCache();
   restoreMainFromCache();
 });
 
+// ═══════════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════════
+function initTabs() {
+  document.querySelectorAll('#tab-bar button').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('#tab-bar button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).style.display = 'block';
+  document.querySelector(`#tab-bar button[data-tab="${name}"]`).classList.add('active');
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'main')      renderMainTable();
+  if (name === 'rules')     renderRulesTab();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOCALSTORAGE — MAIN
+// ═══════════════════════════════════════════════════════════════
+function saveMainToCache(rows, label) {
+  try {
+    localStorage.setItem(CK_MAIN,     JSON.stringify(rows));
+    localStorage.setItem(CK_MAIN_TS,  label);
+    localStorage.setItem(CK_MAIN_ROW, rows.length);
+  } catch(e) { log('Warning: could not cache data (storage full?)', 'log-warn'); }
+}
+
 function restoreMainFromCache() {
   try {
-    const cached = localStorage.getItem(CACHE_KEY_MAIN);
+    const cached = localStorage.getItem(CK_MAIN);
     if (!cached) { showCacheBanner(false); return; }
-    mainData = JSON.parse(cached);
-    const ts   = localStorage.getItem(CACHE_KEY_MAIN_TS)  || 'unknown';
-    const rows = localStorage.getItem(CACHE_KEY_MAIN_ROW) || mainData.length;
+    mainData     = JSON.parse(cached);
+    mainDataCols = deriveColumns(mainData);
+    const ts   = localStorage.getItem(CK_MAIN_TS)  || '';
+    const rows = localStorage.getItem(CK_MAIN_ROW) || mainData.length;
     document.getElementById('box-main').classList.add('loaded');
-    document.getElementById('main-name').textContent = `✓ Restored from cache (${rows} rows)`;
-    document.getElementById('main-sublabel').textContent = 'Auto-restored from cache ✓\nDrop here to load a different version';
+    document.getElementById('main-name').textContent = `✓ Restored (${rows} rows)`;
     showCacheBanner(true, ts, rows);
     checkCanProcess();
-    setStep(1);
+    switchTab('dashboard');
   } catch(e) {
-    localStorage.removeItem(CACHE_KEY_MAIN);
+    localStorage.removeItem(CK_MAIN);
     showCacheBanner(false);
   }
 }
 
-function saveMainToCache(rows, label) {
-  try {
-    localStorage.setItem(CACHE_KEY_MAIN, JSON.stringify(rows));
-    localStorage.setItem(CACHE_KEY_MAIN_TS,  label);
-    localStorage.setItem(CACHE_KEY_MAIN_ROW, rows.length);
-  } catch(e) {
-    // localStorage quota exceeded (unlikely for typical file sizes)
-    log('Warning: could not save to cache (storage full?)', 'log-warn');
-  }
-}
-
 function clearMainCache() {
-  localStorage.removeItem(CACHE_KEY_MAIN);
-  localStorage.removeItem(CACHE_KEY_MAIN_TS);
-  localStorage.removeItem(CACHE_KEY_MAIN_ROW);
-  mainData = null;
+  [CK_MAIN, CK_MAIN_TS, CK_MAIN_ROW].forEach(k => localStorage.removeItem(k));
+  mainData = null; mainDataCols = [];
   document.getElementById('box-main').classList.remove('loaded');
   document.getElementById('main-name').textContent = '';
-  document.getElementById('main-sublabel').textContent = 'No cache — drop or click to load MAIN file';
+  document.getElementById('main-sublabel').textContent = 'No cache — drop here to load MAIN file';
   showCacheBanner(false);
   checkCanProcess();
+  renderDashboard();
 }
 
-function showCacheBanner(hasCache, ts, rows) {
-  const banner = document.getElementById('cache-banner');
-  if (!hasCache) {
-    banner.style.display = 'none';
-    return;
-  }
-  banner.style.display = 'flex';
-  banner.style.background = '#f0fff4';
-  banner.style.border = '1px solid #9ae6b4';
-  banner.style.color  = '#276749';
-  banner.innerHTML = `
-    <span style="font-size:1.2rem">💾</span>
-    <span><strong>MAIN file cached</strong> — ${rows} rows, last saved ${ts}</span>
-    <button class="btn-danger" style="padding:5px 12px;font-size:0.75rem;margin-left:auto;" onclick="clearMainCache()">
-      🗑 Clear cache
-    </button>`;
+function showCacheBanner(has, ts, rows) {
+  const b = document.getElementById('cache-banner');
+  if (!has) { b.className = ''; return; }
+  b.className = 'has-cache';
+  document.getElementById('cache-text').textContent = `MAIN cached — ${rows} rows, last saved ${ts}`;
 }
 
-// ── Logging ───────────────────────────────────────────────────────────────────
-function log(msg, cls='') {
+// ═══════════════════════════════════════════════════════════════
+// LOCALSTORAGE — RULES
+// ═══════════════════════════════════════════════════════════════
+function saveRulesToCache() {
+  try {
+    localStorage.setItem(CK_RULE1,   JSON.stringify(rule1Map));
+    localStorage.setItem(CK_RULE2,   JSON.stringify(rule2Pairs));
+    localStorage.setItem(CK_RULE_TS, new Date().toLocaleString());
+  } catch(e) {}
+}
+
+function restoreRulesFromCache() {
+  try {
+    const r1 = localStorage.getItem(CK_RULE1);
+    const r2 = localStorage.getItem(CK_RULE2);
+    if (!r1 || !r2) return;
+    rule1Map   = JSON.parse(r1);
+    rule2Pairs = JSON.parse(r2);
+    const ts = localStorage.getItem(CK_RULE_TS) || '';
+    document.getElementById('rule-cache-info').textContent =
+      `Rules restored from cache — ${Object.keys(rule1Map).length} Sales Org entries, ${rule2Pairs.length} Action entries (saved ${ts})`;
+    document.getElementById('box-rule').classList.add('loaded');
+    document.getElementById('rule-name').textContent =
+      `✓ Rules cached (${Object.keys(rule1Map).length} + ${rule2Pairs.length})`;
+    checkCanProcess();
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════════
+function showToast(msg, duration = 2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOG
+// ═══════════════════════════════════════════════════════════════
+function log(msg, cls = '') {
   const box = document.getElementById('log-box');
   box.style.display = 'block';
   const line = document.createElement('div');
@@ -480,47 +477,45 @@ function log(msg, cls='') {
   box.scrollTop = box.scrollHeight;
 }
 
-// ── Drag helpers ──────────────────────────────────────────────────────────────
-function dragOver(e, id) { e.preventDefault(); document.getElementById(id).classList.add('drag-over'); }
-function dragLeave(id)   { document.getElementById(id).classList.remove('drag-over'); }
+// ═══════════════════════════════════════════════════════════════
+// DRAG & DROP
+// ═══════════════════════════════════════════════════════════════
+function dragOver(e, id)  { e.preventDefault(); document.getElementById(id).classList.add('drag-over'); }
+function dragLeave(id)    { document.getElementById(id).classList.remove('drag-over'); }
+function dropFile(e, tgt) { e.preventDefault(); dragLeave('box-' + tgt); const f = e.dataTransfer.files[0]; if (f) readFileAs(f, tgt); }
+function dropNewFiles(e)  { e.preventDefault(); dragLeave('dropzone'); addNewFiles(e.dataTransfer.files); }
 
-function dropFile(e, target) {
-  e.preventDefault(); dragLeave('box-' + target);
-  const file = e.dataTransfer.files[0];
-  if (file) readFileAs(file, target);
-}
-function dropNewFiles(e) {
-  e.preventDefault(); dragLeave('dropzone');
-  addNewFiles(e.dataTransfer.files);
-}
+// ═══════════════════════════════════════════════════════════════
+// FILE LOADING
+// ═══════════════════════════════════════════════════════════════
+function loadFile(input, tgt) { if (input.files[0]) readFileAs(input.files[0], tgt); }
 
-// ── File loading ──────────────────────────────────────────────────────────────
-function loadFile(input, target) {
-  if (input.files[0]) readFileAs(input.files[0], target);
-}
-
-function readFileAs(file, target) {
+function readFileAs(file, tgt) {
   const reader = new FileReader();
   reader.onload = e => {
     const wb = XLSX.read(e.target.result, { type: 'array', cellDates: false });
-    if (target === 'rule') {
+    if (tgt === 'rule') {
       ruleWb = wb;
       parseRules(wb);
       document.getElementById('rule-name').textContent = '✓ ' + file.name;
       document.getElementById('box-rule').classList.add('loaded');
       log(`Rule file loaded: ${file.name}`, 'log-ok');
-    } else if (target === 'main') {
+      const activeTab = document.querySelector('#tab-bar button.active');
+      if (activeTab && activeTab.dataset.tab === 'rules') renderRulesTab();
+    } else if (tgt === 'main') {
       const sheet = wb.Sheets[wb.SheetNames[0]];
-      mainData = XLSX.utils.sheet_to_json(sheet, { defval: null });
+      mainData     = XLSX.utils.sheet_to_json(sheet, { defval: null });
+      mainDataCols = deriveColumns(mainData);
       const ts = new Date().toLocaleString();
       saveMainToCache(mainData, ts);
       document.getElementById('main-name').textContent = `✓ ${file.name} (${mainData.length} rows)`;
       document.getElementById('box-main').classList.add('loaded');
       showCacheBanner(true, ts, mainData.length);
-      log(`MAIN file loaded: ${file.name} — ${mainData.length} rows`, 'log-ok');
+      log(`MAIN loaded: ${file.name} — ${mainData.length} rows`, 'log-ok');
+      renderDashboard();
     }
     checkCanProcess();
-    setStep(ruleWb ? 2 : 1);
+    setStep(Object.keys(rule1Map).length > 0 ? 2 : 1);
   };
   reader.readAsArrayBuffer(file);
 }
@@ -533,7 +528,7 @@ function addNewFiles(files) {
       const sheet = wb.Sheets[wb.SheetNames[0]];
       const rows  = XLSX.utils.sheet_to_json(sheet, { defval: null });
       newFiles.push({ name: file.name, rows });
-      log(`New file queued: ${file.name} — ${rows.length} rows`, 'log-info');
+      log(`Queued: ${file.name} — ${rows.length} rows`, 'log-info');
       renderQueuedList();
       checkCanProcess();
     };
@@ -542,30 +537,25 @@ function addNewFiles(files) {
 }
 
 function renderQueuedList() {
-  const el = document.getElementById('queued-list');
-  el.innerHTML = '';
-  newFiles.forEach((f, i) => {
-    el.innerHTML += `<div class="queued-item">
+  document.getElementById('queued-list').innerHTML = newFiles.map((f, i) =>
+    `<div class="queued-item">
       <span>📄</span>
-      <span class="q-name">${f.name}</span>
+      <span class="q-name">${escHtml(f.name)}</span>
       <span class="q-rows">${f.rows.length} rows</span>
       <span class="q-remove" onclick="removeQueued(${i})">✕</span>
-    </div>`;
-  });
+    </div>`).join('');
 }
 
-function removeQueued(i) {
-  newFiles.splice(i, 1);
-  renderQueuedList();
-  checkCanProcess();
-}
+function removeQueued(i) { newFiles.splice(i, 1); renderQueuedList(); checkCanProcess(); }
 
 function checkCanProcess() {
-  const ok = ruleWb && (mainData || newFiles.length > 0);
-  document.getElementById('btn-process').disabled = !ok;
+  const hasRules = Object.keys(rule1Map).length > 0 || rule2Pairs.length > 0;
+  document.getElementById('btn-process').disabled = !(hasRules && (mainData || newFiles.length > 0));
 }
 
-// ── Parse Rules ───────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// RULE PARSING
+// ═══════════════════════════════════════════════════════════════
 function resolveColorFromCell(ws, row, col) {
   const addr = XLSX.utils.encode_cell({ r: row, c: col });
   const cell = ws[addr];
@@ -583,31 +573,32 @@ function resolveColorFromCell(ws, row, col) {
 }
 
 function parseRules(wb) {
-  rule1Map   = {};
-  rule2Pairs = [];
-
+  rule1Map = {}; rule2Pairs = [];
   const ws1 = wb.Sheets['Rule1'];
-  if (!ws1) { log('WARNING: Rule1 tab not found', 'log-warn'); return; }
-  const r1rows = XLSX.utils.sheet_to_json(ws1, { header: 1, defval: null });
-  for (let i = 2; i < r1rows.length; i++) {
-    const [salesOrg, comment] = r1rows[i];
-    if (!salesOrg) continue;
-    const key   = normSalesOrg(salesOrg);
-    const color = resolveColorFromCell(ws1, i, 2);
-    rule1Map[key] = { comment: comment ? String(comment).trim() : '', color };
+  if (ws1) {
+    const rows = XLSX.utils.sheet_to_json(ws1, { header: 1, defval: null });
+    for (let i = 2; i < rows.length; i++) {
+      const [salesOrg, comment] = rows[i];
+      if (!salesOrg) continue;
+      const key   = normSalesOrg(salesOrg);
+      const color = resolveColorFromCell(ws1, i, 2);
+      rule1Map[key] = { comment: comment ? String(comment).trim() : '', color };
+    }
   }
-  log(`Rule1 parsed: ${Object.keys(rule1Map).length} entries`, 'log-ok');
-
   const ws2 = wb.Sheets['Rule2'];
-  if (!ws2) { log('WARNING: Rule2 tab not found', 'log-warn'); return; }
-  const r2rows = XLSX.utils.sheet_to_json(ws2, { header: 1, defval: null });
-  for (let i = 1; i < r2rows.length; i++) {
-    const [action, comment] = r2rows[i];
-    if (!action || ['Action for O2I','#NA'].includes(String(action).trim())) continue;
-    const color = resolveColorFromCell(ws2, i, 2);
-    rule2Pairs.push({ text: String(action).trim(), comment: comment ? String(comment).trim() : '', color });
+  if (ws2) {
+    const rows = XLSX.utils.sheet_to_json(ws2, { header: 1, defval: null });
+    for (let i = 1; i < rows.length; i++) {
+      const [action, comment] = rows[i];
+      if (!action || ['Action for O2I','#NA'].includes(String(action).trim())) continue;
+      const color = resolveColorFromCell(ws2, i, 2);
+      rule2Pairs.push({ text: String(action).trim(), comment: comment ? String(comment).trim() : '', color });
+    }
   }
-  log(`Rule2 parsed: ${rule2Pairs.length} entries`, 'log-ok');
+  log(`Rule1: ${Object.keys(rule1Map).length} | Rule2: ${rule2Pairs.length}`, 'log-ok');
+  saveRulesToCache();
+  document.getElementById('rule-cache-info').textContent =
+    `Rules loaded — ${Object.keys(rule1Map).length} Sales Org entries, ${rule2Pairs.length} Action entries`;
 }
 
 function normSalesOrg(val) {
@@ -616,16 +607,16 @@ function normSalesOrg(val) {
   return isNaN(n) ? s : String(n);
 }
 
-// ── Date / time helpers ───────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// DATE / TIME HELPERS
+// ═══════════════════════════════════════════════════════════════
 function serialToDateStr(serial) {
   if (serial == null || serial === '') return null;
-  // Already formatted (string like "03/07/2026") — pass through
   if (typeof serial === 'string' && /\d{2}\/\d{2}\/\d{4}/.test(serial)) return serial;
   const n = Number(serial);
   if (isNaN(n)) return serial;
   const d = new Date(Date.UTC(1899, 11, 30) + n * 86400000);
-  return [d.getUTCDate(), d.getUTCMonth()+1, d.getUTCFullYear()]
-    .map(x => String(x).padStart(2,'0')).join('/');
+  return [d.getUTCDate(), d.getUTCMonth()+1, d.getUTCFullYear()].map(x => String(x).padStart(2,'0')).join('/');
 }
 
 function serialToTimeStr(serial) {
@@ -634,242 +625,606 @@ function serialToTimeStr(serial) {
   const n = Number(serial);
   if (isNaN(n)) return serial;
   const t = Math.round(n * 86400);
-  return [Math.floor(t/3600)%24, Math.floor((t%3600)/60), t%60]
-    .map(x => String(x).padStart(2,'0')).join(':');
+  return [Math.floor(t/3600)%24, Math.floor((t%3600)/60), t%60].map(x => String(x).padStart(2,'0')).join(':');
 }
 
-// ── Main processing ───────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// COLOR UTILITIES
+// ═══════════════════════════════════════════════════════════════
+function colorToHex(c) { return c ? '#' + c.slice(2) : '#ffffff'; }
+function hexToColor(h) { return 'FF' + h.replace('#','').toUpperCase(); }
+
+// ═══════════════════════════════════════════════════════════════
+// RULE MATCHING — single row
+// ═══════════════════════════════════════════════════════════════
+function matchRow(row) {
+  const raw = row['Sales Organization'];
+  if (raw) {
+    const n = parseInt(String(raw).trim().split(/\s/)[0], 10);
+    const key = isNaN(n) ? String(raw).trim() : String(n);
+    if (rule1Map[key]) return { comment: rule1Map[key].comment, color: rule1Map[key].color };
+  }
+  const actionText = row['Action to be taken by O2I'] ? String(row['Action to be taken by O2I']).trim() : '';
+  const match = rule2Pairs.find(p => p.text && actionText.includes(p.text));
+  if (match) return { comment: match.comment, color: match.color };
+  return { comment: '', color: null };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RE-RUN MATCHING (only fills blank Comments)
+// ═══════════════════════════════════════════════════════════════
+function rerunMatchingOnMain() {
+  if (!mainData) return;
+  let filled = 0;
+  mainData.forEach(row => {
+    if (!row.Comment) {
+      const m = matchRow(row);
+      row.Comment   = m.comment;
+      row._rowColor = m.color;
+      if (m.comment) filled++;
+    }
+  });
+  saveMainToCache(mainData, new Date().toLocaleString());
+  showToast(`Rules applied — ${filled} blank comment${filled !== 1 ? 's' : ''} filled`);
+  renderDashboard();
+  const activeTab = document.querySelector('#tab-bar button.active');
+  if (activeTab && activeTab.dataset.tab === 'main') renderMainTable();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PROCESS
+// ═══════════════════════════════════════════════════════════════
 async function runProcess() {
   document.getElementById('btn-process').disabled = true;
   document.getElementById('process-icon').innerHTML = '<span class="spinner"></span>';
   document.getElementById('log-box').innerHTML = '';
   document.getElementById('log-box').style.display = 'block';
   document.getElementById('stats-bar').style.display = 'none';
-  document.getElementById('card-download').style.display = 'none';
   setStep(3);
-
-  await new Promise(r => setTimeout(r, 50));
+  await new Promise(r => setTimeout(r, 40));
 
   log('── Starting process ──', 'log-info');
+  const INV    = 'Invoice Document Number';
+  const SORG   = 'Sales Organization';
+  const ODN    = 'ODN';
 
-  const INV_COL      = 'Invoice Document Number';
-  const SALES_ORG    = 'Sales Organization';
-  const ACTION_COL   = 'Action to be taken by O2I';
-  const ODN_COL      = 'ODN';
-
-  // 1. Combine
+  // 1. Combine, tag source
   let combined = [];
   if (mainData && mainData.length) {
-    combined = combined.concat(mainData);
-    log(`MAIN (cached): ${mainData.length} rows`);
+    mainData.forEach(r => combined.push({ ...r, _src: 'main' }));
+    log(`MAIN: ${mainData.length} rows`);
   }
   newFiles.forEach(f => {
-    combined = combined.concat(f.rows);
-    log(`New file — ${f.name}: ${f.rows.length} rows`);
+    f.rows.forEach(r => combined.push({ ...r, _src: 'new' }));
+    log(`New — ${f.name}: ${f.rows.length} rows`);
   });
   log(`Combined: ${combined.length} rows`, 'log-info');
 
-  // 2. Dedup — keep last occurrence of each Invoice Document Number
+  // 2. Dedup — keep last occurrence
   const seen = new Map();
-  combined.forEach((row, i) => {
-    const key = row[INV_COL];
-    if (key != null && key !== '') seen.set(String(key), i);
-  });
-  const keptIdxs = new Set(seen.values());
-  const deduped  = combined.filter((row, i) => {
-    const key = row[INV_COL];
-    return key == null || key === '' || keptIdxs.has(i);
-  });
+  combined.forEach((r, i) => { const k = r[INV]; if (k != null && k !== '') seen.set(String(k), i); });
+  const keptIdx = new Set(seen.values());
+  const deduped = combined.filter((r, i) => { const k = r[INV]; return k == null || k === '' || keptIdx.has(i); });
   const dedupRemoved = combined.length - deduped.length;
-  log(`After dedup: ${deduped.length} rows (removed ${dedupRemoved} duplicates)`, 'log-ok');
+  log(`After dedup: ${deduped.length} rows (removed ${dedupRemoved})`, 'log-ok');
 
-  // 3. Comment + color + format
+  // 3. Format + comment + color
   let r1hits = 0, r2hits = 0, noMatch = 0;
 
   const processed = deduped.map(row => {
-    let sorgNorm = '';
-    const sorg = row[SALES_ORG];
-    if (sorg != null && sorg !== '') {
-      const n = parseInt(String(sorg).trim().split(/\s/)[0], 10);
-      sorgNorm = isNaN(n) ? String(sorg).trim() : String(n);
-    }
-    const sorgFmt = sorgNorm ? sorgNorm.padStart(4, '0') : '';
+    const sorgN = parseInt(String(row[SORG]||'').trim().split(/\s/)[0], 10);
+    const sorgKey = isNaN(sorgN) ? String(row[SORG]||'').trim() : String(sorgN);
+    const sorgFmt = sorgKey ? sorgKey.padStart(4,'0') : '';
+    const invNum  = row[INV] != null ? Math.round(Number(row[INV])) : null;
+    const odnNum  = row[ODN] != null ? Math.round(Number(row[ODN])) : null;
+    const evDate  = serialToDateStr(row['Event Date']);
+    const evTime  = serialToTimeStr(row['Event Time']);
 
-    let comment = '', color = null;
-    if (sorgNorm && rule1Map[sorgNorm]) {
-      ({ comment, color } = rule1Map[sorgNorm]);
-      r1hits++;
-    } else {
-      const actionText = row[ACTION_COL] ? String(row[ACTION_COL]).trim() : '';
-      const match = rule2Pairs.find(p => p.text && actionText.includes(p.text));
-      if (match) { comment = match.comment; color = match.color; r2hits++; }
+    // Preserve user edits from MAIN; apply rules only to new rows or blank comments
+    let comment   = (row._src === 'main' && row.Comment) ? row.Comment : '';
+    let rowColor  = (row._src === 'main' && row._rowColor) ? row._rowColor : null;
+
+    if (!comment) {
+      const m = matchRow(row);
+      comment  = m.comment;
+      rowColor = m.color;
+      if (comment) { if (rule1Map[sorgKey]) r1hits++; else r2hits++; }
       else noMatch++;
+    } else {
+      r1hits++;
     }
 
-    const invNum = row[INV_COL] != null ? Math.round(Number(row[INV_COL])) : null;
-    const odnNum = row[ODN_COL]  != null ? Math.round(Number(row[ODN_COL]))  : null;
-
-    return {
-      ...row,
-      __comment: comment,
-      __color:   color,
-      [SALES_ORG]:       sorgFmt,
-      [INV_COL]:         invNum,
-      [ODN_COL]:         odnNum,
-      'Event Date':      serialToDateStr(row['Event Date']),
-      'Event Time':      serialToTimeStr(row['Event Time']),
-    };
+    const out = { ...row };
+    delete out._src;
+    out[SORG]         = sorgFmt;
+    out[INV]          = invNum;
+    out[ODN]          = odnNum;
+    out['Event Date'] = evDate;
+    out['Event Time'] = evTime;
+    out.Comment       = comment;
+    out._rowColor     = rowColor;
+    return out;
   });
 
   log(`Rule1: ${r1hits} | Rule2: ${r2hits} | No match: ${noMatch}`, 'log-ok');
 
-  // 4. Save updated MAIN back to cache
-  const cacheRows = processed.map(r => {
-    const out = {};
-    Object.keys(r).filter(k => !k.startsWith('__')).forEach(k => out[k] = r[k]);
-    // store comment back into the row for future sessions
-    out['Comment'] = r.__comment || '';
-    return out;
-  });
+  mainData     = processed;
+  mainDataCols = deriveColumns(mainData);
   const ts = new Date().toLocaleString();
-  saveMainToCache(cacheRows, ts);
-  mainData = cacheRows;
-  showCacheBanner(true, ts, cacheRows.length);
-  log(`MAIN cached: ${cacheRows.length} rows saved for next session`, 'log-ok');
+  saveMainToCache(mainData, ts);
+  showCacheBanner(true, ts, mainData.length);
+  log(`Cached ${mainData.length} rows.`, 'log-ok');
 
-  // 5. Build workbook
-  log('Building Excel file…', 'log-info');
-  const wb = XLSX.utils.book_new();
+  document.getElementById('stat-total').textContent  = `Total: ${processed.length}`;
+  document.getElementById('stat-rule1').textContent  = `Rule1: ${r1hits}`;
+  document.getElementById('stat-rule2').textContent  = `Rule2: ${r2hits}`;
+  document.getElementById('stat-dedup').textContent  = `Dedup removed: ${dedupRemoved}`;
+  document.getElementById('stats-bar').style.display = 'flex';
+  document.getElementById('btn-process').disabled    = false;
+  document.getElementById('process-icon').textContent = '⚙️';
+  setStep(4);
+  newFiles = []; renderQueuedList();
+  log('Done! Opening MAIN Data tab…', 'log-ok');
+  setTimeout(() => switchTab('main'), 700);
+}
 
-  const sampleRow = processed[0] || {};
-  const origCols  = Object.keys(sampleRow).filter(k => !k.startsWith('__') && k !== 'Comment');
-  const allCols   = ['Comment', ...origCols];
+// ═══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════
+function renderDashboard() {
+  const ph   = document.getElementById('dash-placeholder');
+  const wrap = document.getElementById('dashboard-tiles');
+  if (!mainData || !mainData.length) { ph.style.display = 'block'; wrap.innerHTML = ''; return; }
+  ph.style.display = 'none';
 
-  const aoaData = [allCols];
-  processed.forEach(row => {
-    aoaData.push(allCols.map(col => col === 'Comment' ? (row.__comment || '') : row[col]));
+  const counts = buildTileCounts();
+  let html = makeTile('__total', counts.__total, 'Total Rows', 'tile-total', activeTile === '__total');
+  TILE_DEFS.forEach(d => html += makeTile(d.kw, counts[d.kw] || 0, d.label, '', activeTile === d.kw));
+  html += makeTile('__unmatched', counts.__unmatched, 'No Comment', 'tile-unmatched', activeTile === '__unmatched');
+  wrap.innerHTML = html;
+}
+
+function makeTile(kw, count, label, extraClass, isActive) {
+  const safe = kw.replace(/'/g,"\\'");
+  return `<div class="dash-tile${extraClass ? ' ' + extraClass : ''}${isActive ? ' active-tile' : ''}" onclick="handleTileClick('${safe}')">
+    <div class="tile-count">${count}</div>
+    <div class="tile-label">${escHtml(label)}</div>
+  </div>`;
+}
+
+function buildTileCounts() {
+  const counts = { __total: mainData.length, __unmatched: 0 };
+  TILE_DEFS.forEach(d => counts[d.kw] = 0);
+  mainData.forEach(row => {
+    const c = (row.Comment || '').toLowerCase();
+    if (!c) { counts.__unmatched++; return; }
+    const matched = TILE_DEFS.find(d => c.includes(d.kw.toLowerCase()));
+    if (matched) counts[matched.kw]++;
+    else counts.__unmatched++;
+  });
+  return counts;
+}
+
+function handleTileClick(kw) {
+  if (activeTile === kw && kw !== '__total') {
+    activeTile = null; clearFilter(); return;
+  }
+  activeTile = kw;
+  if (kw === '__total') {
+    activeTile = null; clearFilter(); return;
+  }
+  if (kw === '__unmatched') {
+    document.getElementById('f-comment').value = '';
+    switchTab('main');
+    filteredRows = mainData.reduce((acc, r, i) => { if (!r.Comment) acc.push(i); return acc; }, []);
+    currentPage  = 1;
+    renderPage(1);
+    document.getElementById('main-row-count').textContent = `${filteredRows.length} of ${mainData.length} rows (no comment)`;
+  } else {
+    document.getElementById('f-comment').value = kw;
+    switchTab('main');
+    applyFilter();
+  }
+  renderDashboard();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MAIN DATA TABLE
+// ═══════════════════════════════════════════════════════════════
+function deriveColumns(data) {
+  if (!data || !data.length) return [];
+  const keys = Object.keys(data[0]).filter(k => !k.startsWith('_'));
+  return ['Comment', ...keys.filter(k => k !== 'Comment')];
+}
+
+function renderMainTable() {
+  const ph    = document.getElementById('main-placeholder');
+  const table = document.getElementById('main-data-table');
+  if (!mainData || !mainData.length) {
+    ph.style.display = 'block'; table.style.display = 'none';
+    document.getElementById('main-row-count').textContent = '—';
+    return;
+  }
+  ph.style.display = 'none'; table.style.display = 'table';
+  mainDataCols = deriveColumns(mainData);
+  applyFilter();
+  attachTableEvents();
+}
+
+function applyFilter() {
+  if (!mainData) return;
+  const fc = document.getElementById('f-comment').value.trim().toLowerCase();
+  const fi = document.getElementById('f-invoice').value.trim().toLowerCase();
+  const fe = document.getElementById('f-event').value.trim().toLowerCase();
+  const fd = document.getElementById('f-date').value.trim().toLowerCase();
+  const fa = document.getElementById('f-action').value.trim().toLowerCase();
+
+  filteredRows = [];
+  mainData.forEach((row, i) => {
+    if (fc && !(row.Comment || '').toLowerCase().includes(fc)) return;
+    if (fi && !String(row['Invoice Document Number'] || '').toLowerCase().includes(fi)) return;
+    if (fe && !(row['Event'] || '').toLowerCase().includes(fe)) return;
+    if (fd && !(row['Event Date'] || '').toLowerCase().includes(fd)) return;
+    if (fa && !(row['Action to be taken by O2I'] || '').toLowerCase().includes(fa)) return;
+    filteredRows.push(i);
+  });
+  currentPage = 1;
+  renderPage(1);
+}
+
+function clearFilter() {
+  ['f-comment','f-invoice','f-event','f-date','f-action'].forEach(id => document.getElementById(id).value = '');
+  activeTile = null;
+  if (mainData) applyFilter();
+  renderDashboard();
+}
+
+function renderPage(pageNum) {
+  currentPage = pageNum;
+  const start = (pageNum - 1) * PAGE_SIZE;
+  const slice = filteredRows.slice(start, start + PAGE_SIZE);
+  const table = document.getElementById('main-data-table');
+  const INV   = 'Invoice Document Number';
+
+  let html = '<thead><tr>' + mainDataCols.map(c => `<th>${escHtml(c)}</th>`).join('') + '</tr></thead><tbody>';
+
+  slice.forEach(rowIdx => {
+    const row   = mainData[rowIdx];
+    const bgHex = row._rowColor ? colorToHex(row._rowColor) : '';
+    html += '<tr>';
+    mainDataCols.forEach(col => {
+      const val  = row[col] != null ? row[col] : '';
+      const safe = escHtml(String(val));
+      if (col === 'Comment') {
+        html += `<td class="col-comment" contenteditable="true" data-rowidx="${rowIdx}" data-orig="${safe}">${safe}</td>`;
+      } else if (col === INV) {
+        const bg = bgHex ? ` style="background:${bgHex};"` : '';
+        html += `<td class="col-invoice"${bg}>${safe}</td>`;
+      } else {
+        html += `<td title="${safe}">${safe}</td>`;
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  table.innerHTML = html;
+
+  document.getElementById('main-row-count').textContent = `${filteredRows.length} of ${mainData.length} rows`;
+
+  // Pagination
+  const totalPages = Math.ceil(filteredRows.length / PAGE_SIZE);
+  let pagHtml = '';
+  if (totalPages > 1) {
+    const s = Math.max(1, pageNum - 3), e = Math.min(totalPages, pageNum + 3);
+    pagHtml += '<span>Page: </span>';
+    if (s > 1) pagHtml += `<button onclick="renderPage(1)">1</button><span>&hellip;</span>`;
+    for (let p = s; p <= e; p++)
+      pagHtml += `<button class="${p===pageNum?'active-page':''}" onclick="renderPage(${p})">${p}</button>`;
+    if (e < totalPages) pagHtml += `<span>&hellip;</span><button onclick="renderPage(${totalPages})">${totalPages}</button>`;
+    pagHtml += `<span style="margin-left:8px;color:#a0aec0;">${filteredRows.length} total</span>`;
+  }
+  document.getElementById('main-pagination').innerHTML = pagHtml;
+}
+
+let _tableEventsAttached = false;
+function attachTableEvents() {
+  if (_tableEventsAttached) return;
+  _tableEventsAttached = true;
+  const wrap = document.getElementById('main-table-wrap');
+
+  wrap.addEventListener('focusout', e => {
+    const td = e.target.closest('.col-comment');
+    if (!td) return;
+    const idx    = parseInt(td.dataset.rowidx);
+    const newVal = td.textContent.trim();
+    if (mainData[idx] && newVal !== td.dataset.orig) {
+      mainData[idx].Comment = newVal;
+      td.dataset.orig = newVal;
+      saveMainToCache(mainData, new Date().toLocaleString());
+      unsavedEdits = true;
+      document.getElementById('unsaved-badge').style.display = 'inline-block';
+      renderDashboard();
+    }
   });
 
-  const ws = XLSX.utils.aoa_to_sheet(aoaData);
+  wrap.addEventListener('keydown', e => {
+    const td = e.target.closest('.col-comment');
+    if (!td) return;
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); td.blur(); }
+    if (e.key === 'Escape') { td.textContent = td.dataset.orig; td.blur(); }
+  });
+}
 
-  const FIXED_W = {
-    'Comment': 41, 'Remark': 83, 'Action to be taken by O2I': 83,
-    'Sales Organization': 7, 'Rcvr Country Code': 7,
+function copyInvoiceNumbers() {
+  if (!filteredRows.length) { showToast('No rows to copy'); return; }
+  const vals = filteredRows
+    .map(i => mainData[i]['Invoice Document Number'])
+    .filter(v => v != null && v !== '')
+    .join('\n');
+  const copy = txt => {
+    const ta = document.createElement('textarea');
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
   };
-  ws['!cols'] = allCols.map(h => {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(vals).then(() => showToast(`✓ Copied ${filteredRows.length} invoice numbers`)).catch(() => { copy(vals); showToast(`✓ Copied ${filteredRows.length} invoice numbers`); });
+  } else { copy(vals); showToast(`✓ Copied ${filteredRows.length} invoice numbers`); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BUILD & DOWNLOAD MAIN XLSX
+// ═══════════════════════════════════════════════════════════════
+function buildAndDownloadMain() {
+  if (!mainData || !mainData.length) { showToast('No data to export'); return; }
+  const cols   = mainDataCols;
+  const INV    = 'Invoice Document Number';
+  const ODN    = 'ODN';
+  const invIdx = cols.indexOf(INV);
+  const odnIdx = cols.indexOf(ODN);
+  const FIXED_W = { 'Comment':41,'Remark':83,'Action to be taken by O2I':83,'Sales Organization':7,'Rcvr Country Code':7 };
+
+  const aoaData = [cols, ...mainData.map(row => cols.map(c => row[c] != null ? row[c] : ''))];
+  const ws = XLSX.utils.aoa_to_sheet(aoaData);
+  ws['!cols'] = cols.map(h => {
     if (FIXED_W[h] !== undefined) return { wch: FIXED_W[h] };
     let max = h.length;
-    processed.forEach(row => {
-      const v = h === 'Comment' ? (row.__comment || '') : row[h];
-      if (v != null) max = Math.max(max, String(v).length);
-    });
+    mainData.forEach(row => { const v = row[h]; if (v != null) max = Math.max(max, String(v).length); });
     return { wch: Math.min(max + 2, 60) };
   });
 
-  const invColIdx = allCols.indexOf(INV_COL);
-  const odnColIdx = allCols.indexOf(ODN_COL);
-  const hdrStyle  = { font: { bold: true }, fill: { patternType: 'solid', fgColor: { rgb: 'BDD7EE' } } };
-
-  allCols.forEach((h, ci) => {
+  const hdrStyle = { font: { bold: true }, fill: { patternType: 'solid', fgColor: { rgb: 'BDD7EE' } } };
+  cols.forEach((h, ci) => {
     const addr = XLSX.utils.encode_cell({ r: 0, c: ci });
     if (!ws[addr]) ws[addr] = { t: 's', v: h };
     ws[addr].s = { ...hdrStyle };
-    if (ci === invColIdx || ci === odnColIdx)
-      ws[addr].s.alignment = { horizontal: 'center' };
+    if (ci === invIdx || ci === odnIdx) ws[addr].s.alignment = { horizontal: 'center' };
   });
-
-  processed.forEach((row, ri) => {
-    allCols.forEach((col, ci) => {
+  mainData.forEach((row, ri) => {
+    cols.forEach((col, ci) => {
       const addr = XLSX.utils.encode_cell({ r: ri + 1, c: ci });
       if (!ws[addr]) ws[addr] = { t: 's', v: '' };
       if (!ws[addr].s) ws[addr].s = {};
-      if (ci === invColIdx) {
-        if (row.__color)
-          ws[addr].s.fill = { patternType: 'solid', fgColor: { rgb: row.__color.replace(/^FF/,'') } };
+      if (ci === invIdx) {
+        if (row._rowColor) ws[addr].s.fill = { patternType: 'solid', fgColor: { rgb: row._rowColor.replace(/^FF/,'') } };
         ws[addr].s.alignment = { horizontal: 'center' };
         ws[addr].s.numFmt    = '0';
       }
-      if (ci === odnColIdx) {
-        ws[addr].s.alignment = { horizontal: 'center' };
-        ws[addr].s.numFmt    = '0';
-      }
+      if (ci === odnIdx) { ws[addr].s.alignment = { horizontal: 'center' }; ws[addr].s.numFmt = '0'; }
     });
   });
 
+  const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'ZEIDOS Error Status');
-  resultWb = wb;
-
-  log('Done! File ready to download.', 'log-ok');
-
-  document.getElementById('stat-total').textContent  = `Total rows: ${processed.length}`;
-  document.getElementById('stat-rule1').textContent  = `Rule1 matches: ${r1hits}`;
-  document.getElementById('stat-rule2').textContent  = `Rule2 matches: ${r2hits}`;
-  document.getElementById('stat-dedup').textContent  = `Duplicates removed: ${dedupRemoved}`;
-  document.getElementById('stats-bar').style.display = 'flex';
-  document.getElementById('card-download').style.display = 'block';
-  document.getElementById('btn-process').disabled = false;
-  document.getElementById('process-icon').textContent = '⚙️';
-  setStep(4);
-  renderPreview(processed, allCols);
+  XLSX.writeFile(wb, 'ZEIDOS Error Status MAIN.xlsx', { bookType: 'xlsx', cellStyles: true });
+  unsavedEdits = false;
+  document.getElementById('unsaved-badge').style.display = 'none';
+  showToast('✓ MAIN.xlsx downloaded — replace the file in your SharePoint folder');
 }
 
-// ── Preview ───────────────────────────────────────────────────────────────────
-function renderPreview(rows, cols) {
-  const INV_COL = 'Invoice Document Number';
-  const wrap = document.getElementById('preview-wrap');
-  const SHOW = Math.min(rows.length, 100);
-  const COLS = cols.slice(0, 12);
-  let html = '<table><tr>' + COLS.map(c => `<th>${c}</th>`).join('') + '</tr>';
-  rows.slice(0, SHOW).forEach(row => {
-    html += '<tr>' + COLS.map(col => {
-      const val = col === 'Comment' ? (row.__comment || '') : (row[col] ?? '');
-      const style = col === INV_COL && row.__color
-        ? `background:#${row.__color.replace(/^FF/,'')};` : '';
-      return `<td style="${style}" title="${String(val).replace(/"/g,'&quot;')}">${String(val).substring(0,50)}</td>`;
-    }).join('') + '</tr>';
+// ═══════════════════════════════════════════════════════════════
+// RULES TAB
+// ═══════════════════════════════════════════════════════════════
+function renderRulesTab() {
+  const hasRules = Object.keys(rule1Map).length > 0 || rule2Pairs.length > 0;
+  document.getElementById('rules-placeholder').style.display = hasRules ? 'none' : 'block';
+  document.getElementById('rule1-section').style.display     = hasRules ? 'block' : 'none';
+  document.getElementById('rule2-section').style.display     = hasRules ? 'block' : 'none';
+  if (!hasRules) return;
+  renderRule1Table();
+  renderRule2Table();
+}
+
+function renderRule1Table() {
+  const entries = Object.entries(rule1Map);
+  let html = `<table class="rule-table"><thead><tr>
+    <th style="width:90px">Sales Org</th><th>Comment</th>
+    <th style="width:100px">Color</th><th style="width:46px"></th>
+  </tr></thead><tbody>`;
+  entries.forEach(([key, val], i) => {
+    const hex = val.color ? colorToHex(val.color) : '#ffffff';
+    html += `<tr>
+      <td class="editable" contenteditable="true" data-rule="r1" data-field="key" data-idx="${i}">${escHtml(key)}</td>
+      <td class="editable" contenteditable="true" data-rule="r1" data-field="comment" data-idx="${i}">${escHtml(val.comment)}</td>
+      <td>
+        <span class="color-swatch" style="background:${hex}"></span>
+        <input type="color" class="color-picker" value="${hex}" onchange="handleRule1Color(this,${i})">
+      </td>
+      <td><button class="btn-danger" style="padding:3px 8px;font-size:0.7rem;" onclick="deleteRule1Row('${escHtml(key)}')">✕</button></td>
+    </tr>`;
   });
-  html += '</table>';
-  if (rows.length > SHOW)
-    html += `<div style="padding:8px 12px;font-size:0.75rem;color:#718096;">Showing first ${SHOW} of ${rows.length} rows</div>`;
+  html += '</tbody></table>';
+  const wrap = document.getElementById('rule1-table-wrap');
   wrap.innerHTML = html;
-  wrap.style.display = 'block';
-  previewVisible = true;
+  // Event delegation
+  wrap.onFocusoutBound && wrap.removeEventListener('focusout', wrap.onFocusoutBound);
+  wrap.onFocusoutBound = e => {
+    const td = e.target.closest('[data-rule="r1"]');
+    if (!td) return;
+    const idx   = parseInt(td.dataset.idx);
+    const field = td.dataset.field;
+    const val   = td.textContent.trim();
+    const entries2 = Object.entries(rule1Map);
+    if (idx >= entries2.length) return;
+    const [oldKey, oldObj] = entries2[idx];
+    if (field === 'comment' && val !== oldObj.comment) {
+      rule1Map[oldKey].comment = val;
+      saveRulesToCache(); rerunMatchingOnMain();
+    } else if (field === 'key' && val !== oldKey) {
+      const newKey = normSalesOrg(val);
+      if (newKey && newKey !== oldKey) {
+        rule1Map[newKey] = rule1Map[oldKey];
+        delete rule1Map[oldKey];
+        saveRulesToCache();
+        setTimeout(renderRule1Table, 100);
+      }
+    }
+  };
+  wrap.addEventListener('focusout', wrap.onFocusoutBound);
 }
 
-function togglePreview() {
-  const wrap = document.getElementById('preview-wrap');
-  previewVisible = !previewVisible;
-  wrap.style.display = previewVisible ? 'block' : 'none';
+function handleRule1Color(input, idx) {
+  const entries = Object.entries(rule1Map);
+  if (idx >= entries.length) return;
+  const [key] = entries[idx];
+  rule1Map[key].color = hexToColor(input.value);
+  input.previousElementSibling.style.background = input.value;
+  saveRulesToCache(); rerunMatchingOnMain();
 }
 
-// ── Download ──────────────────────────────────────────────────────────────────
-function downloadResult() {
-  if (!resultWb) return;
-  XLSX.writeFile(resultWb, 'ZEIDOS Error Status MAIN.xlsx', { bookType: 'xlsx', cellStyles: true });
+function addRule1Row() {
+  const key = prompt('Enter Sales Org number (e.g. 1000):');
+  if (!key || !key.trim()) return;
+  const norm = normSalesOrg(key.trim());
+  if (!norm) return;
+  rule1Map[norm] = { comment: '', color: null };
+  saveRulesToCache(); renderRule1Table();
 }
 
-// ── Utility ───────────────────────────────────────────────────────────────────
+function deleteRule1Row(key) {
+  if (!confirm(`Delete Rule 1 entry for Sales Org "${key}"?`)) return;
+  delete rule1Map[key];
+  saveRulesToCache(); renderRule1Table();
+}
+
+function renderRule2Table() {
+  let html = `<table class="rule-table"><thead><tr>
+    <th class="col-action">Action Text</th><th style="width:200px">Comment</th>
+    <th style="width:100px">Color</th><th style="width:46px"></th>
+  </tr></thead><tbody>`;
+  rule2Pairs.forEach((entry, i) => {
+    const hex = entry.color ? colorToHex(entry.color) : '#ffffff';
+    html += `<tr>
+      <td class="editable col-action" contenteditable="true" data-rule="r2" data-field="text" data-idx="${i}">${escHtml(entry.text)}</td>
+      <td class="editable" contenteditable="true" data-rule="r2" data-field="comment" data-idx="${i}">${escHtml(entry.comment)}</td>
+      <td>
+        <span class="color-swatch" style="background:${hex}"></span>
+        <input type="color" class="color-picker" value="${hex}" onchange="handleRule2Color(this,${i})">
+      </td>
+      <td><button class="btn-danger" style="padding:3px 8px;font-size:0.7rem;" onclick="deleteRule2Row(${i})">✕</button></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  const wrap = document.getElementById('rule2-table-wrap');
+  wrap.innerHTML = html;
+  wrap.onFocusoutBound && wrap.removeEventListener('focusout', wrap.onFocusoutBound);
+  wrap.onFocusoutBound = e => {
+    const td = e.target.closest('[data-rule="r2"]');
+    if (!td) return;
+    const idx   = parseInt(td.dataset.idx);
+    const field = td.dataset.field;
+    const val   = td.textContent.trim();
+    if (rule2Pairs[idx] && val !== rule2Pairs[idx][field]) {
+      rule2Pairs[idx][field] = val;
+      saveRulesToCache(); rerunMatchingOnMain();
+    }
+  };
+  wrap.addEventListener('focusout', wrap.onFocusoutBound);
+}
+
+function handleRule2Color(input, idx) {
+  if (!rule2Pairs[idx]) return;
+  rule2Pairs[idx].color = hexToColor(input.value);
+  input.previousElementSibling.style.background = input.value;
+  saveRulesToCache(); rerunMatchingOnMain();
+}
+
+function addRule2Row() {
+  const text = prompt('Enter the Action text keyword to match:');
+  if (!text || !text.trim()) return;
+  rule2Pairs.push({ text: text.trim(), comment: '', color: null });
+  saveRulesToCache(); renderRule2Table();
+}
+
+function deleteRule2Row(i) {
+  if (!confirm(`Delete Rule 2 entry #${i + 1}?`)) return;
+  rule2Pairs.splice(i, 1);
+  saveRulesToCache(); renderRule2Table();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DOWNLOAD RULE.XLSX
+// ═══════════════════════════════════════════════════════════════
+function downloadRuleXlsx() {
+  const wb = XLSX.utils.book_new();
+
+  // Rule1: row 0 = title, row 1 = headers, row 2+ = data
+  const r1Entries = Object.entries(rule1Map);
+  const r1Aoa = [
+    ['LIST for XLOOKUP:', null, null],
+    ['SALES ORG', 'COMMENT', 'Color Map'],
+    ...r1Entries.map(([k, v]) => [k, v.comment, null])
+  ];
+  const ws1 = XLSX.utils.aoa_to_sheet(r1Aoa);
+  r1Entries.forEach(([, v], i) => {
+    if (!v.color) return;
+    const addr = XLSX.utils.encode_cell({ r: i + 2, c: 2 });
+    if (!ws1[addr]) ws1[addr] = { t: 's', v: '' };
+    ws1[addr].s = { fill: { patternType: 'solid', fgColor: { rgb: v.color.replace(/^FF/,'') } } };
+  });
+  XLSX.utils.book_append_sheet(wb, ws1, 'Rule1');
+
+  // Rule2: row 0 = headers, row 1+ = data
+  const r2Aoa = [
+    ['Action for O2I', 'Comment', null],
+    ...rule2Pairs.map(p => [p.text, p.comment, null])
+  ];
+  const ws2 = XLSX.utils.aoa_to_sheet(r2Aoa);
+  rule2Pairs.forEach((p, i) => {
+    if (!p.color) return;
+    const addr = XLSX.utils.encode_cell({ r: i + 1, c: 2 });
+    if (!ws2[addr]) ws2[addr] = { t: 's', v: '' };
+    ws2[addr].s = { fill: { patternType: 'solid', fgColor: { rgb: p.color.replace(/^FF/,'') } } };
+  });
+  XLSX.utils.book_append_sheet(wb, ws2, 'Rule2');
+
+  XLSX.writeFile(wb, 'Rule.xlsx', { bookType: 'xlsx', cellStyles: true });
+  showToast('✓ Rule.xlsx downloaded — replace the file in your SharePoint folder');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILITY
+// ═══════════════════════════════════════════════════════════════
+function escHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function setStep(n) {
   for (let i = 1; i <= 4; i++) {
-    const el = document.getElementById('step'+i);
+    const el = document.getElementById('step' + i);
+    if (!el) continue;
     el.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
     el.querySelector('.step-num').textContent = i < n ? '✓' : i;
   }
 }
 
 function clearAll() {
-  newFiles = []; resultWb = null;
-  ruleWb = null; rule1Map = {}; rule2Pairs = [];
-  document.getElementById('box-rule').classList.remove('loaded');
-  document.getElementById('rule-name').textContent = '';
+  newFiles = []; unsavedEdits = false;
   document.getElementById('queued-list').innerHTML = '';
   document.getElementById('log-box').innerHTML = '';
   document.getElementById('log-box').style.display = 'none';
   document.getElementById('stats-bar').style.display = 'none';
-  document.getElementById('card-download').style.display = 'none';
-  document.getElementById('preview-wrap').innerHTML = '';
-  document.getElementById('preview-wrap').style.display = 'none';
-  document.getElementById('inp-rule').value = '';
+  document.getElementById('unsaved-badge').style.display = 'none';
   document.getElementById('inp-new').value = '';
   checkCanProcess();
   setStep(1);
